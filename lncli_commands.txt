@@ -1,2 +1,0 @@
-BTC: .\lncli --rpcserver=localhost:10080 --lnddir=C:\Users\USERNAME\AppData\Local\LazarusFaucet\btc --macaroonpath=C:\Users\USERNAME\AppData\Local\LazarusFaucet\btc\data\chain\bitcoin\testnet\admin.macaroon
-LTC: .\lncli --rpcserver=localhost:10081 --lnddir=C:\Users\USERNAME\AppData\Local\LazarusFaucet\ltc --macaroonpath=C:\Users\USERNAME\AppData\Local\LazarusFaucet\ltc\data\chain\litecoin\testnet\admin.macaroon

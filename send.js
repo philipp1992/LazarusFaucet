@@ -1,5 +1,6 @@
 const axios = require("axios");
 const https = require("https");
+const config = require("./config.js");
 
 const httpsAgent = new https.Agent({
     rejectUnauthorized: false, // (NOTE: this will disable client verification)
@@ -32,10 +33,8 @@ async function sendCoins(web3, wallet, coin, address, amount) {
         case "ETH":
             res = await sendETH(web3, wallet, address, amount);
             break;
-        case "USDT":
-            res = await sendUSDT(web3, wallet, address, amount);
-            break;
         default:
+            res = await sendERC20(web3, wallet, address, amount, config.coins[coin].contract, config.coins[coin].decimals);
             break;
     }
 
@@ -56,7 +55,7 @@ async function sendBTC(wallet, address, amount) {
 
     try {
         let response = await axios
-            .post("https://127.0.0.1:8080/v1/transactions", data, {
+            .post("https://127.0.0.1:" + config.ports.BTC + "/v1/transactions", data, {
                 httpsAgent,
                 headers: headers,
             })
@@ -80,7 +79,7 @@ async function sendLTC(wallet, address, amount) {
 
     try {
         let response = await axios
-            .post("https://127.0.0.1:8081/v1/transactions", data, {
+            .post("https://127.0.0.1:" + config.ports.LTC + "/v1/transactions", data, {
                 httpsAgent,
                 headers: headers,
             })
@@ -110,7 +109,7 @@ async function sendETH(web3, wallet, address, amount) {
 
     } catch (error) {
         console.log(error);
-        options.gas = options.gas * 1.2 // 20% more gas
+        options.gas = Math.floor(options.gas * 1.2) // 20% more gas
         signedTx = await web3.eth.accounts.signTransaction(options, wallet.eth.private);
 
         let txHash = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
@@ -122,7 +121,7 @@ async function sendETH(web3, wallet, address, amount) {
     }
 }
 
-async function sendUSDT(web3, wallet, address, amount) {
+async function sendERC20(web3, wallet, address, amount, contractAddress, decimals) {
 
     const ABI = [
         {
@@ -150,16 +149,15 @@ async function sendUSDT(web3, wallet, address, amount) {
         },
     ];
 
-    const USDTaddress = "0xD92E713d051C37EbB2561803a3b5FBAbc4962431";
-    const contract = new web3.eth.Contract(ABI, USDTaddress);
+    const contract = new web3.eth.Contract(ABI, contractAddress);
 
-    const tx = await contract.methods.transfer(address, amount * Math.pow(10, 18));
+    const tx = await contract.methods.transfer(address, amount * Math.pow(10, decimals));
 
     let options = {
         from: wallet.eth.address,
-        to: USDTaddress,
+        to: contractAddress,
         data: tx.encodeABI(),
-        gas: await tx.estimateGas({ from: wallet.eth.address }),
+        gas: await tx.estimateGas({ from: wallet.eth.address }), // unused gas is refunded
     };
 
     let signedTx = await web3.eth.accounts.signTransaction(options, wallet.eth.private);
@@ -174,15 +172,21 @@ async function sendUSDT(web3, wallet, address, amount) {
 
     } catch (error) {
         console.log(error);
-        options.gas = options.gas * 1.2 // 20% more gas
+        options.gas = Math.floor(options.gas * 1.2) // 20% more gas
         signedTx = await web3.eth.accounts.signTransaction(options, wallet.eth.private);
 
-        let txHash = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
-            .once('transactionHash', (hash) => {
-                return hash;
-            })
+        try {
+            let txHash = await web3.eth.sendSignedTransaction(signedTx.rawTransaction)
+                .once('transactionHash', (hash) => {
+                    return hash;
+                })
 
-        return txHash.transactionHash;
+            return txHash.transactionHash;
+
+        } catch (error) {
+            console.log(error);
+            return "unlucky"
+        }
     }
 }
 

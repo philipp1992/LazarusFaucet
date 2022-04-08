@@ -1,41 +1,26 @@
 const DiscordJS = require("discord.js");
 const { Intents } = require("discord.js");
-const dotenv = require("dotenv");
-const fs = require("fs");
 const WAValidator = require("multicoin-address-validator");
 const Web3 = require("web3");
 const config = require("./config.js");
-const { initWallet, unlockWallet } = require("./init.js");
+const { unlockWallet } = require("./init.js");
 const { sendCoins } = require("./send.js");
 const LRU = require("lru-cache");
-dotenv.config();
 
-const cache = {
-    BTC: new LRU({
+let cache = {};
+for (let coin in config.coins) {
+    cache[coin] = new LRU({
         max: 500,
-    }),
-    LTC: new LRU({
-        max: 500,
-    }),
-    ETH: new LRU({
-        max: 500,
-    }),
-    USDT: new LRU({
-        max: 500,
-    }),
+    });
 }
 
-// needed to avoid sending multiple not yet accepted txns to the ethereum blockchain 
-let ethReady = true;
-
-const localdir =
-    process.env.LOCALAPPDATA ||
-    (process.platform == "darwin"
-        ? process.env.HOME + "/Library/Application Support"
-        : process.env.HOME + "/.local/share");
-const dir = localdir + "/LazarusFaucet";
+const web3 = new Web3(config.ethProvider);
 
 let wallet;
+(async () => {
+    wallet = await unlockWallet(web3, config.mnemonic);
+    console.log(wallet);
+})();
 // wallet = {
 //     btc: {
 //         address: string,
@@ -51,22 +36,8 @@ let wallet;
 //     }
 // }
 
-const web3 = new Web3("wss://rinkeby.infura.io/ws/v3/71aa74e8a7ad452a8c3809a184548998");
-
-setTimeout(async () => {
-    if (!fs.existsSync(dir + "/btc/data/chain/bitcoin/testnet/admin.macaroon")) {
-        wallet = await initWallet(
-            web3,
-            config.mnemonic,
-            config.password,
-            config.birthTimestamp
-        );
-        console.log(wallet);
-    } else {
-        wallet = await unlockWallet(web3, config.mnemonic, config.password);
-        console.log(wallet);
-    }
-}, 5000);
+// needed to avoid sending multiple not yet accepted txns to the ethereum blockchain 
+let ethReady = true;
 
 const client = new DiscordJS.Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
@@ -94,7 +65,7 @@ client.on("messageCreate", async (message) => {
                 let validationCoin = coin;
 
                 // if coin is a token -> validate eth address
-                if (coin != "BTC" && "LTC") {
+                if (coin != "BTC" && coin != "LTC") {
                     validationCoin = "ETH";
                 }
 
@@ -105,7 +76,7 @@ client.on("messageCreate", async (message) => {
                     // check if user has already withdrawn
                     if (!cache[coin].has(message.author.id)) {
 
-                        if (coin != "BTC" && "LTC") {
+                        if (coin != "BTC" && coin != "LTC") {
                             if (ethReady == false) {
                                 message.reply({
                                     content:
@@ -168,4 +139,4 @@ client.on("messageCreate", async (message) => {
     }
 });
 
-client.login(process.env.TOKEN);
+client.login(config.token);
