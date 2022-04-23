@@ -7,16 +7,18 @@ config.token = ""
 config.mnemonic = "";
 config.ethProvider = ""
 
-config.ports = {
-    BTC: "8080",
-    LTC: "8081"
+config.lnd.btc = {
+    port: "10000",
+    host: "lnd-btc",
+    macaroonDir: "/opt/faucet/conf/lnd/btc/admin.macaroon"
 }
 
-// admin.macaroon absolute path
-config.macaroonDir = {
-    BTC: "",
-    LTC: ""
+config.lnd.ltc = {
+    port: "10000",
+    host: "lnd-ltc",
+    macaroonDir: "/opt/faucet/conf/lnd/ltc/admin.macaroon"
 }
+
 
 config.coins = {
     BTC: {

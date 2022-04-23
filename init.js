@@ -14,11 +14,11 @@ async function unlockWallet(web3, mnemonic) {
     // You must unlock the btc and ltc lnd wallets manually!!
 
     // --- BTC wallet ---
-    const btcMacaroon = fs.readFileSync(config.macaroonDir.BTC);
+    const btcMacaroon = fs.readFileSync(config.lnd.btc.macaroonDir);
     const btcMacaroonHexString = btcMacaroon.toString("hex");
 
     // --- LTC wallet ---
-    const ltcMacaroon = fs.readFileSync(config.macaroonDir.LTC);
+    const ltcMacaroon = fs.readFileSync(config.lnd.ltc.macaroonDir);
     const ltcMacaroonHexString = ltcMacaroon.toString("hex");
 
     // --- ETH wallet ---
@@ -52,7 +52,7 @@ async function unlockWallet(web3, mnemonic) {
 
 async function getBtcAddress(macaroon) {
 
-    const wsState = new WebSocket("wss://127.0.0.1:" + config.ports.BTC + "/v1/state/subscribe?method=GET", {
+    const wsState = new WebSocket("https://" + config.lnd.btc.host + ":" + config.lnd.btc.port + "/v1/state/subscribe?method=GET", {
         rejectUnauthorized: false,
     });
 
@@ -66,7 +66,7 @@ async function getBtcAddress(macaroon) {
                 console.log("BTC wallet state \t| " + JSON.parse(message).result.state);
                 if (JSON.parse(message).result != undefined && JSON.parse(message).result.state == "SERVER_ACTIVE") {
                     let btcAddress = await axios
-                        .post("https://127.0.0.1:" + config.ports.BTC + "/v2/wallet/address/next", { type: 1 }, { httpsAgent, headers: headers, })
+                        .post("https://" + config.lnd.btc.host + ":" + config.lnd.btc.port + "/v2/wallet/address/next", { type: 1 }, { httpsAgent, headers: headers, })
                         .then((res) => {
                             return res.data.addr;
                         })
@@ -83,33 +83,33 @@ async function getBtcAddress(macaroon) {
 
 async function getLtcAddress(macaroon) {
 
-//    const wsState = new WebSocket("wss://127.0.0.1:" + config.ports.LTC + "/v1/state/subscribe?method=GET", {
-//        rejectUnauthorized: false,
-//    });
-//
-//    const headers = {
-//        "Grpc-Metadata-macaroon": macaroon,
-//    };
-//
-//    return new Promise(async function (resolve, reject) {
-//        wsState.on('message', async (message) => {
-//            if (JSON.parse(message).result != undefined) {
-//                console.log("LTC Wallet state \t| " + JSON.parse(message).result.State);
-//                if (JSON.parse(message).result != undefined && JSON.parse(message).result.State == "RPC_ACTIVE") {
-//                    let ltcAddress = await axios
-//                        .get("https://127.0.0.1:" + config.ports.LTC + "/v1/newaddress", { type: "p2wkh" }, { httpsAgent, headers: headers, })
-//                        .then((res) => {
-//                            return res.data.addr;
-//                        })
-//                        .catch((error) => {
-//                            return error.response;
-//                        });
-//
-//                    resolve(ltcAddress);
-//                }
-//            }
-//        });
-//    });
+    //    const wsState = new WebSocket("wss://127.0.0.1:" + config.ports.LTC + "/v1/state/subscribe?method=GET", {
+    //        rejectUnauthorized: false,
+    //    });
+    //
+    //    const headers = {
+    //        "Grpc-Metadata-macaroon": macaroon,
+    //    };
+    //
+    //    return new Promise(async function (resolve, reject) {
+    //        wsState.on('message', async (message) => {
+    //            if (JSON.parse(message).result != undefined) {
+    //                console.log("LTC Wallet state \t| " + JSON.parse(message).result.State);
+    //                if (JSON.parse(message).result != undefined && JSON.parse(message).result.State == "RPC_ACTIVE") {
+    //                    let ltcAddress = await axios
+    //                        .get("https://127.0.0.1:" + config.ports.LTC + "/v1/newaddress", { type: "p2wkh" }, { httpsAgent, headers: headers, })
+    //                        .then((res) => {
+    //                            return res.data.addr;
+    //                        })
+    //                        .catch((error) => {
+    //                            return error.response;
+    //                        });
+    //
+    //                    resolve(ltcAddress);
+    //                }
+    //            }
+    //        });
+    //    });
 
     return "thisshittylnd"
 }

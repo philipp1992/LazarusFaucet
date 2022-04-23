@@ -55,7 +55,7 @@ async function sendBTC(wallet, address, amount) {
 
     try {
         let response = await axios
-            .post("https://127.0.0.1:" + config.ports.BTC + "/v1/transactions", data, {
+            .post("https://" + config.lnd.btc.host + ":" + config.lnd.btc.port + "/v1/transactions", data, {
                 httpsAgent,
                 headers: headers,
             })
@@ -79,7 +79,7 @@ async function sendLTC(wallet, address, amount) {
 
     try {
         let response = await axios
-            .post("https://127.0.0.1:" + config.ports.LTC + "/v1/transactions", data, {
+            .post("https://" + config.lnd.ltc.host + ":" + config.lnd.ltc.port + "/v1/transactions", data, {
                 httpsAgent,
                 headers: headers,
             })
