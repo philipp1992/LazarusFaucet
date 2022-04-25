@@ -16,7 +16,7 @@ async function unlockWallet(web3, mnemonic) {
     // --- BTC wallet ---
     const btcMacaroon = fs.readFileSync(config.lnd.btc.macaroonDir);
     const btcMacaroonHexString = btcMacaroon.toString("hex");
-
+    console.log(btcMacaroonHexString)
     // --- LTC wallet ---
     const ltcMacaroon = fs.readFileSync(config.lnd.ltc.macaroonDir);
     const ltcMacaroonHexString = ltcMacaroon.toString("hex");
@@ -27,17 +27,19 @@ async function unlockWallet(web3, mnemonic) {
 
     try {
         const ethAccount = await web3.eth.accounts.privateKeyToAccount(ethWallet.privateKey);
-        const btcAddress = await getBtcAddress(btcMacaroonHexString);
-        const ltcAddress = await getLtcAddress(ltcMacaroonHexString);
+
+        //const btcAddress = await getBtcAddress(btcMacaroonHexString);
+        //	console.log(btcAddress)
+	   //        const ltcAddress = await getLtcAddress(ltcMacaroonHexString);
 
         console.log("READY!");
         return {
             btc: {
-                address: btcAddress,
+//                address: btcAddress,
                 macaroon: btcMacaroonHexString,
             },
             ltc: {
-                address: ltcAddress,
+  //              address: ltcAddress,
                 macaroon: ltcMacaroonHexString,
             },
             eth: {
@@ -52,19 +54,18 @@ async function unlockWallet(web3, mnemonic) {
 
 async function getBtcAddress(macaroon) {
 
-    const wsState = new WebSocket("https://" + config.lnd.btc.host + ":" + config.lnd.btc.port + "/v1/state/subscribe?method=GET", {
+    const wsState = new WebSocket("wss://" + config.lnd.btc.host + ":" + config.lnd.btc.port + "/v1/state/subscribe?method=GET", {
         rejectUnauthorized: false,
     });
-
     const headers = {
         "Grpc-Metadata-macaroon": macaroon,
     };
-
     return new Promise(async function (resolve, reject) {
         wsState.on('message', async (message) => {
             if (JSON.parse(message).result != undefined) {
                 console.log("BTC wallet state \t| " + JSON.parse(message).result.state);
-                if (JSON.parse(message).result != undefined && JSON.parse(message).result.state == "SERVER_ACTIVE") {
+                if (JSON.parse(message).result != undefined && JSON.parse(message).result.state == "SERVER_ACTIVE") 
+		     try {
                     let btcAddress = await axios
                         .post("https://" + config.lnd.btc.host + ":" + config.lnd.btc.port + "/v2/wallet/address/next", { type: 1 }, { httpsAgent, headers: headers, })
                         .then((res) => {
@@ -75,6 +76,9 @@ async function getBtcAddress(macaroon) {
                         });
 
                     resolve(btcAddress);
+		     }
+		    catch(err) {
+			    return err
                 }
             }
         });

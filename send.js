@@ -22,6 +22,7 @@ const httpsAgent = new https.Agent({
 // }
 
 async function sendCoins(web3, wallet, coin, address, amount) {
+	console.log(wallet)
     let res = "Coin not supported";
     switch (coin) {
         case "BTC":
@@ -42,7 +43,7 @@ async function sendCoins(web3, wallet, coin, address, amount) {
 }
 
 async function sendBTC(wallet, address, amount) {
-
+	 console.log(wallet.btc)
     const headers = {
         "Grpc-Metadata-macaroon": wallet.btc.macaroon,
     };
@@ -85,6 +86,7 @@ async function sendLTC(wallet, address, amount) {
             })
         return response.data.txid;
     } catch (error) {
+	console.log(error)
         return error;
     }
 }

@@ -19,7 +19,6 @@ const web3 = new Web3(config.ethProvider);
 let wallet;
 (async () => {
     wallet = await unlockWallet(web3, config.mnemonic);
-    console.log(wallet);
 })();
 // wallet = {
 //     btc: {
@@ -42,7 +41,6 @@ let ethReady = true;
 const client = new DiscordJS.Client({
     intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
 });
-
 client.on("ready", () => {
     console.log("Faucet bot is up and running!");
 });
