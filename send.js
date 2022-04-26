@@ -96,7 +96,7 @@ async function sendETH(web3, wallet, address, amount) {
     let options = {
         to: address,
         value: amount * Math.pow(10, 18),
-        gas: "21000"
+        gas: "40000"
     };
 
     let signedTx = await web3.eth.accounts.signTransaction(options, wallet.eth.private);
