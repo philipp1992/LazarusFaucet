@@ -25,12 +25,6 @@ async function sendCoins(web3, wallet, coin, address, amount) {
 	console.log(wallet)
     let res = "Coin not supported";
     switch (coin) {
-        case "BTC":
-            res = await sendBTC(wallet, address, amount);
-            break;
-        case "LTC":
-            res = await sendLTC(wallet, address, amount);
-            break;
         case "ETH":
             res = await sendETH(web3, wallet, address, amount);
             break;
@@ -40,55 +34,6 @@ async function sendCoins(web3, wallet, coin, address, amount) {
     }
 
     return res;
-}
-
-async function sendBTC(wallet, address, amount) {
-	 console.log(wallet.btc)
-    const headers = {
-        "Grpc-Metadata-macaroon": wallet.btc.macaroon,
-    };
-
-    let data = {
-        addr: address,
-        amount: (amount * Math.pow(10, 8)).toString(),
-        spend_unconfirmed: true
-    };
-
-    try {
-        let response = await axios
-            .post("https://" + config.lnd.btc.host + ":" + config.lnd.btc.port + "/v1/transactions", data, {
-                httpsAgent,
-                headers: headers,
-            })
-        return response.data.txid;
-    } catch (error) {
-        return error;
-    }
-}
-
-async function sendLTC(wallet, address, amount) {
-
-    const headers = {
-        "Grpc-Metadata-macaroon": wallet.ltc.macaroon,
-    };
-
-    let data = {
-        addr: address,
-        amount: (amount * Math.pow(10, 8)).toString(),
-        spend_unconfirmed: true
-    };
-
-    try {
-        let response = await axios
-            .post("https://" + config.lnd.ltc.host + ":" + config.lnd.ltc.port + "/v1/transactions", data, {
-                httpsAgent,
-                headers: headers,
-            })
-        return response.data.txid;
-    } catch (error) {
-	console.log(error)
-        return error;
-    }
 }
 
 async function sendETH(web3, wallet, address, amount) {

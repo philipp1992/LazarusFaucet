@@ -94,18 +94,10 @@ client.on("messageCreate", async (message) => {
                         let txHash = await sendCoins(web3, wallet, coin, address, config.coins[coin].amount);
 
                         let txExplorer;
-                        switch (coin) {
-                            case "BTC":
-                                txExplorer = "https://www.blockchain.com/btc-testnet/tx/" + txHash;
-                                break;
-                            case "LTC":
-                                txExplorer = "https://blockexplorer.one/litecoin/testnet/tx/" + txHash;
-                                break;
-                            default:
-                                txExplorer = "https://rinkeby.etherscan.io/tx/" + txHash;
-                                ethReady = true;
-                                break;
-                        }
+
+                        txExplorer = "https://goerli.etherscan.io/tx/" + txHash;
+                        ethReady = true;
+
 
                         let msg = "Sent " + config.coins[coin].amount + " " + coin + ": " + txExplorer;
                         console.log(msg);
